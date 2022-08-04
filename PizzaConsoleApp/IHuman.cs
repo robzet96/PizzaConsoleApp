@@ -8,10 +8,10 @@ namespace PizzaConsoleApp
 {
     internal interface IHuman
     {
-        public string Name { get; set; }
-        public string LastName { get; set; }
-        public string Login { get; set; }
-        public string Password { get; set; }
+        string Name { get; set; }
+        string LastName { get; set; }
+        string Login { get; set; }
+        string Password { get; set; }
         void EditPassword();
     }    
 }
