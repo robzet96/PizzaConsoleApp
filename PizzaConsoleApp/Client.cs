@@ -21,7 +21,7 @@ namespace PizzaConsoleApp
         public void EditPassword(string newpassword, string oldpassword)
         {
             SqlConnection.Open();
-            string query = $"UPDATE Clients SET ClientPassword = @newpass,  WHERE @oldpass; ";
+            string query = $"UPDATE Clients SET ClientPassword = @newpass WHERE ClientPassword = @oldpass; ";
             SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);
             sqlCommand.Parameters.AddWithValue("@newpass", newpassword);
             sqlCommand.Parameters.AddWithValue("@oldpass", oldpassword);
