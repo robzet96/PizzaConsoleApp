@@ -29,6 +29,18 @@ namespace PizzaConsoleApp
             sqlCommand.ExecuteNonQuery();
             SqlConnection.Close();
         }
-
+        public void AddPizza(string pizzaname, string pizzaingredients, string pizzaprice)
+        {
+            SqlConnection.Open();
+            string pizzasize = "Small";
+            string query = $"INSERT INTO Pizzas VALUES(@pizzaname, @pizzaingredients, @pizzasize, @pizzaprice)";
+            SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);
+            sqlCommand.Parameters.AddWithValue("@pizzaname", pizzaname);
+            sqlCommand.Parameters.AddWithValue("@pizzaingredients", pizzaingredients);
+            sqlCommand.Parameters.AddWithValue("@pizzasize", pizzasize);
+            sqlCommand.Parameters.AddWithValue("@pizzaprice", pizzaprice);
+            sqlCommand.ExecuteNonQuery();
+            SqlConnection.Close();
+        }
     }
 }
