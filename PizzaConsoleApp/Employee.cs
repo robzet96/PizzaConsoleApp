@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace PizzaConsoleApp
 {
-    public class Employee : IHuman
+    public class Employee : Client, IHuman
     {
         SqlConnection SqlConnection;
         public Employee()
@@ -51,6 +51,22 @@ namespace PizzaConsoleApp
             sqlCommand.Parameters.AddWithValue("@sauceprice", sauceprice);
             sqlCommand.ExecuteNonQuery();
             SqlConnection.Close();
+        }
+        public void ConfirmRegistration()
+        {
+            foreach (var item in GetClients())
+            {
+                Console.WriteLine(item);
+            }
+            Console.WriteLine("If everything is fine, you can accept registration by typing clientID down bellow.");
+            int clientid = int.Parse(Console.ReadLine());
+            SqlConnection.Open();
+            string query = $"INSERT INTO ClientRegisterConfirm VALUES(@ClientID)";
+            SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);
+            sqlCommand.Parameters.AddWithValue("@ClientID", clientid);
+            sqlCommand.ExecuteNonQuery();
+            SqlConnection.Close();
+            Console.WriteLine("Registration accepted.");
         }
     }
 }

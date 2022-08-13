@@ -10,14 +10,18 @@ namespace PizzaConsoleApp
     public class Client : IHuman
     {
         SqlConnection SqlConnection;
+        List<Client> clients = new List<Client>();
         public Client()
         {
             SqlConnection = new SqlConnection(@"Data Source=DESKTOP-KOH3FDQ\SQLEXPRESS;Initial Catalog=PizzaApp;Integrated Security=true;");
         }
+        public int ClientID { get; set; }
         public string Name { get; set; }
         public string LastName { get; set; }
         public string Login { get; set; }
         public string Password { get; set; }
+        public string ClientAddress { get; set; }
+        public string ClientPhoneNumber { get; set; }
         public double Price { get; set; }
         public void EditPassword(string newpassword, string oldpassword)
         {
@@ -114,6 +118,32 @@ namespace PizzaConsoleApp
             } while (choice == "Y");
             Console.WriteLine("{0:00.00}", Price);
             Price = 0;
+        }
+        public override string ToString()
+        {
+            return "Client ID: " + ClientID + " Name: " + Name + " Last name: " + LastName + " Phone number: " + ClientPhoneNumber + " Login: " + Login + " Client address: " + ClientAddress + " Password " + Password;
+        }
+        public IEnumerable<Client> GetClients()
+        {
+            SqlConnection.Open();
+            string query = $"SELECT * FROM Clients";
+            SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);
+            SqlDataReader sqlDataReader = sqlCommand.ExecuteReader();
+            while (sqlDataReader.Read())
+            {
+                clients.Add(new Client() 
+                { 
+                    ClientID = sqlDataReader.GetInt32(0), 
+                    Name = sqlDataReader.GetString(1), 
+                    LastName = sqlDataReader.GetString(2), 
+                    ClientPhoneNumber = sqlDataReader.GetString(3), 
+                    Login = sqlDataReader.GetString(4), 
+                    ClientAddress = sqlDataReader.GetString(5), 
+                    Password = sqlDataReader.GetString(6) 
+                });
+            }
+            SqlConnection.Close();
+            return clients;
         }
     }
 }
