@@ -68,5 +68,27 @@ namespace PizzaConsoleApp
             SqlConnection.Close();
             Console.WriteLine("Registration accepted.");
         }
+        public IEnumerable<Client> GetClients()
+        {
+            SqlConnection.Open();
+            string query = $"SELECT * FROM Clients";
+            SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);
+            SqlDataReader sqlDataReader = sqlCommand.ExecuteReader();
+            while (sqlDataReader.Read())
+            {
+                clients.Add(new Client()
+                {
+                    ClientID = sqlDataReader.GetInt32(0),
+                    Name = sqlDataReader.GetString(1),
+                    LastName = sqlDataReader.GetString(2),
+                    ClientPhoneNumber = sqlDataReader.GetString(3),
+                    Login = sqlDataReader.GetString(4),
+                    ClientAddress = sqlDataReader.GetString(5),
+                    Password = sqlDataReader.GetString(6)
+                });
+            }
+            SqlConnection.Close();
+            return clients;
+        }
     }
 }
