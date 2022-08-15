@@ -52,6 +52,24 @@ namespace PizzaConsoleApp
             sqlCommand.ExecuteNonQuery();
             SqlConnection.Close();
         }
+        public void DeletePizza(string pizzaname)
+        {
+            SqlConnection.Open();
+            string query = $"DELETE FROM Pizzas WHERE PizzaName = @pizzaname";
+            SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);
+            sqlCommand.Parameters.AddWithValue("@pizzaname", pizzaname);
+            sqlCommand.ExecuteNonQuery();
+            SqlConnection.Close();
+        }
+        public void DeleteSauce(string saucename)
+        {
+            SqlConnection.Open();
+            string query = $"DELETE FROM Sauces WHERE SauceName = @saucename";
+            SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);
+            sqlCommand.Parameters.AddWithValue("@pizzaname", saucename);
+            sqlCommand.ExecuteNonQuery();
+            SqlConnection.Close();
+        }
         public void ConfirmRegistration()
         {
             foreach (var item in GetClients())
