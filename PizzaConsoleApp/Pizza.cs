@@ -7,7 +7,7 @@ using System.Data.SqlClient;
 
 namespace PizzaConsoleApp
 {
-    public class Pizza
+    public class Pizza : Sauce
     {
         public int Id { get; set; }
         public string PizzaName { get; set; }
@@ -16,7 +16,7 @@ namespace PizzaConsoleApp
         public List<Pizza> Pizzas = new List<Pizza>();
         public override string ToString()
         {
-            return Id + ".\t" + PizzaName + "\t" + PizzaIngredients + "\t" + PizzaPrice + @"\" + (Convert.ToDouble(PizzaPrice) * 1.1) + @"\" + (Convert.ToDouble(PizzaPrice) * 1.2);
+            return Id + ".\t" + PizzaName + "\t" + PizzaIngredients + "\t" + String.Format("{0:0.00}",Convert.ToDouble(PizzaPrice)) + @"/" + String.Format("{0:0.00}", Convert.ToDouble(PizzaPrice) * 1.1) + @"/" + String.Format("{0:0.00}", Convert.ToDouble(PizzaPrice) * 1.2);
         }
     }
 }

@@ -123,7 +123,7 @@ namespace PizzaConsoleApp
         {
             return "Client ID: " + ClientID + " Name: " + Name + " Last name: " + LastName + " Phone number: " + ClientPhoneNumber + " Login: " + Login + " Client address: " + ClientAddress + " Password " + Password;
         }
-        public IEnumerable<Pizza> PizzaMenu()
+        private IEnumerable<Pizza> GetPizza()
         {
             SqlConnection.Open();
             string query = $"SELECT * FROM Pizzas";
@@ -141,6 +141,30 @@ namespace PizzaConsoleApp
             }
             SqlConnection.Close();
             return Pizzas;
+        }
+        private IEnumerable<Sauce> GetSauce()
+        {
+            SqlConnection.Open();
+            string query = $"SELECT * FROM Sauces";
+            SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);
+            SqlDataReader sqlDataReader = sqlCommand.ExecuteReader();
+            while (sqlDataReader.Read())
+            {
+                Sauces.Add(new Sauce()
+                {
+                    SauceId = sqlDataReader.GetInt32(0),
+                    SauceName = sqlDataReader.GetString(1),
+                    SaucePrice = sqlDataReader.GetString(2),
+                });
+            }
+            return Sauces;
+        }
+        public void DisplayMenus(IEnumerable<object> objects)
+        {
+            foreach (var item in objects)
+            {
+                Console.WriteLine(item);
+            }
         }
     }
 }
