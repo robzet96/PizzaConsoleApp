@@ -7,7 +7,7 @@ using System.Data.SqlClient;
 
 namespace PizzaConsoleApp
 {
-    public class Client : IHuman
+    public class Client : Pizza, IHuman
     {
         SqlConnection SqlConnection;
         public List<Client> clients = new List<Client>();
@@ -122,6 +122,25 @@ namespace PizzaConsoleApp
         public override string ToString()
         {
             return "Client ID: " + ClientID + " Name: " + Name + " Last name: " + LastName + " Phone number: " + ClientPhoneNumber + " Login: " + Login + " Client address: " + ClientAddress + " Password " + Password;
-        }        
+        }
+        public IEnumerable<Pizza> PizzaMenu()
+        {
+            SqlConnection.Open();
+            string query = $"SELECT * FROM Pizzas";
+            SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);
+            SqlDataReader sqlDataReader = sqlCommand.ExecuteReader();
+            while (sqlDataReader.Read())
+            {
+                Pizzas.Add(new Pizza()
+                {
+                    Id = sqlDataReader.GetInt32(0),
+                    PizzaName = sqlDataReader.GetString(1),
+                    PizzaIngredients = sqlDataReader.GetString(2),
+                    PizzaPrice = sqlDataReader.GetString(4),
+                });
+            }
+            SqlConnection.Close();
+            return Pizzas;
+        }
     }
 }
