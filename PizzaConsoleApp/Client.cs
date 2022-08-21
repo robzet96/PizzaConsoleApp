@@ -69,10 +69,12 @@ namespace PizzaConsoleApp
             string choice = "N";
             do
             {
+                DisplayMenus(Pizzas);
                 Console.WriteLine("Insert pizza number: ");
                 int pizznum = int.Parse(Console.ReadLine());
                 Console.WriteLine("What size do you want? [S]mall/[M]edium/[L]arge");
                 string pizzasize = Console.ReadLine();
+                DisplayMenus(Sauces);
                 Console.WriteLine("What sauce do you want");
                 string sauce = Console.ReadLine();
                 pizzaorder.Add(Convert.ToString(pizznum));
