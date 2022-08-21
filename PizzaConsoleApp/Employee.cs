@@ -143,6 +143,12 @@ namespace PizzaConsoleApp
             sqlCommand.Parameters.AddWithValue("@ordid", ordid);
             sqlCommand.ExecuteNonQuery();
             SqlConnection.Close();
+            SqlConnection.Open();
+            string query1 = $"INSERT INTO Orders (EmployeeID) VALUES (@empID)";
+            SqlCommand sqlCommand1 = new SqlCommand(query1, SqlConnection);
+            sqlCommand1.Parameters.AddWithValue("@empID", empID);
+            sqlCommand1.ExecuteNonQuery();
+            SqlConnection.Close();
         }
     }
 }
