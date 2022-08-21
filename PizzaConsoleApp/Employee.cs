@@ -72,7 +72,7 @@ namespace PizzaConsoleApp
         }
         public void ConfirmRegistration()
         {
-            foreach (var item in GetClients())
+            foreach (var item in getclients())
             {
                 Console.WriteLine(item);
             }
@@ -86,7 +86,7 @@ namespace PizzaConsoleApp
             SqlConnection.Close();
             Console.WriteLine("Registration accepted.");
         }
-        public IEnumerable<Client> GetClients()
+        private IEnumerable<Client> getclients()
         {
             SqlConnection.Open();
             string query = $"SELECT * FROM Clients";
@@ -108,6 +108,41 @@ namespace PizzaConsoleApp
             SqlConnection.Close();
             return clients;
         }
-
+        private IEnumerable<Orders> getorders()
+        {
+            Orders orders = new Orders();
+            SqlConnection.Open();
+            string query = $"SELECT * FROM Orders";
+            SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);
+            SqlDataReader sqlDataReader = sqlCommand.ExecuteReader();
+            while (sqlDataReader.Read())
+            {                
+                orders.orders.Add(new Orders()
+                {
+                    OrderID = sqlDataReader.GetInt32(0),
+                    CustomerID = sqlDataReader.GetInt32(1),
+                    EmployeeID = sqlDataReader.GetInt32(2),
+                    OrderedThings = sqlDataReader.GetString(3),
+                    TotalPrice = sqlDataReader.GetDouble(4)
+                });
+            }
+            SqlConnection.Close();
+            return orders.orders;
+        }
+        public void ConfirmOrder(int empID)
+        {
+            foreach (var item in getorders())
+            {
+                Console.WriteLine(item);
+            }
+            Console.WriteLine("If we can do that order type order id down bellow");
+            int ordid = int.Parse(Console.ReadLine());
+            SqlConnection.Open();
+            string query = $"INSERT INTO ConfirmOrder VALUES (@ordid)";
+            SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);
+            sqlCommand.Parameters.AddWithValue("@ordid", ordid);
+            sqlCommand.ExecuteNonQuery();
+            SqlConnection.Close();
+        }
     }
 }

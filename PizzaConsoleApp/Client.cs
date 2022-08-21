@@ -59,8 +59,13 @@ namespace PizzaConsoleApp
             sqlCommand.ExecuteNonQuery();
             SqlConnection.Close();
         }
-        public void Order()
+        public void Order(int id)
         {
+            Price = 0;
+            List<string> pizzaorder = new List<string>();
+            string delivery;
+            string address = "";
+            TimeOnly timeOnly;
             string choice = "N";
             do
             {
@@ -70,8 +75,9 @@ namespace PizzaConsoleApp
                 string pizzasize = Console.ReadLine();
                 Console.WriteLine("What sauce do you want");
                 string sauce = Console.ReadLine();
-                Console.WriteLine("Do you want delivery? [Y]es/[N]o");
-                string delivery = Console.ReadLine();
+                pizzaorder.Add(Convert.ToString(pizznum));
+                pizzaorder.Add(pizzasize);
+                pizzaorder.Add(sauce);
                 SqlCommand sqlCommand = new SqlCommand();
                 sqlCommand.CommandType = System.Data.CommandType.Text;
                 sqlCommand.CommandText = $"SELECT PizzaPrice FROM Pizzas WHERE PizzaID = @pizzanum";
@@ -92,7 +98,7 @@ namespace PizzaConsoleApp
                 dr.Read();
                 string d = dr.GetString(0);
                 SqlConnection.Close();
-                switch (pizzasize)
+                switch (pizzasize.ToUpper())
                 {
                     case "S":
                         Price += Convert.ToInt32(d);
@@ -109,15 +115,51 @@ namespace PizzaConsoleApp
                         break;
                 }
                 Price += Convert.ToInt32(data);
-                if (delivery == "Y")
-                {
-                    Price += 5;
-                }
                 Console.WriteLine("Do you want to order something more?");
                 choice = Console.ReadLine();
-            } while (choice == "Y");
+            } while (choice.ToUpper() == "Y");
+            Console.WriteLine("Do you want delivery? [Y]es/[N]o");
+            delivery = Console.ReadLine();
+            pizzaorder.Add(delivery);
+            if (delivery.ToUpper() == "Y")
+            {
+                Console.WriteLine("Should we deliver pizza to address from your account? [Y]es/N[o]");
+                string addresschoice = Console.ReadLine();
+                if (addresschoice.ToUpper() == "Y")
+                {
+                    SqlConnection.Open();
+                    SqlCommand sqlCommand2 = new SqlCommand();
+                    sqlCommand2.CommandType = System.Data.CommandType.Text;
+                    sqlCommand2.CommandText = $"SELECT ClientAddres FROM Clients WHERE ClientID = {id}";
+                    sqlCommand2.Connection = SqlConnection;
+                    SqlDataReader sqlDataReader = sqlCommand2.ExecuteReader();
+                    sqlDataReader.Read();
+                    address = sqlDataReader.GetString(0);
+                    SqlConnection.Close();
+                }
+                else if (addresschoice.ToUpper() == "N")
+                {
+                    Console.WriteLine("Insert delivery address: ");
+                    address = Console.ReadLine();
+                }
+                pizzaorder.Add(address);
+                Price += 5;
+            }
+            Console.WriteLine("When do you want receive your pizza?");
+            timeOnly = TimeOnly.Parse(Console.ReadLine());
+            pizzaorder.Add(timeOnly.ToString());
             Console.WriteLine("{0:00.00}", Price);
-            Price = 0;
+            string orderedthings = "";
+            orderedthings = pizzaorder.Aggregate((current, next) => current + " " + next);
+            Console.WriteLine(orderedthings);
+            SqlConnection.Open();
+            string query = $"INSERT INTO Orders (ClientID, OrderedThings, TotalPrice) VALUES (@id, @orderedthings, @price)";
+            SqlCommand sqlCommand3 = new SqlCommand(query, SqlConnection);
+            sqlCommand3.Parameters.AddWithValue("@id", id);
+            sqlCommand3.Parameters.AddWithValue("@orderedthings", orderedthings);
+            sqlCommand3.Parameters.AddWithValue("@price", Price);
+            sqlCommand3.ExecuteNonQuery();
+            SqlConnection.Close();
         }
         public override string ToString()
         {
