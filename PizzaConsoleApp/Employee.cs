@@ -11,21 +11,27 @@ namespace PizzaConsoleApp
     public class Employee : Client, IHuman
     {
         SqlConnection SqlConnection;
+        public List<Employee> Employees = new List<Employee>();
         public Employee()
         {
             SqlConnection = new SqlConnection(@"Data Source=DESKTOP-KOH3FDQ\SQLEXPRESS;Initial Catalog=PizzaApp;Integrated Security=true;");
         }
+        public int EmployeeID { get; set; }
         public string Name { get; set; }
         public string LastName { get; set; }
         public string Login { get; set; }
         public string Password { get; set; }
-        public void EditPassword(string newpassword, string oldpassword)
+        public override string ToString()
+        {
+            return "Employee ID: " + EmployeeID + "\tName: " + Name + "\tLast name: " + LastName  + "\tLogin: " + Login + "\tPassword: " + Password;
+        }
+        public void EditPassword(string newpassword, int empid)
         {
             SqlConnection.Open();
-            string query = $"UPDATE Employees SET EmployeePassword = @newpass,  WHERE @oldpass; ";
+            string query = $"UPDATE Employees SET EmployeePassword = @newpass WHERE EmployeeID = @empid; ";
             SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);
             sqlCommand.Parameters.AddWithValue("@newpass", newpassword);
-            sqlCommand.Parameters.AddWithValue("@oldpass", oldpassword);
+            sqlCommand.Parameters.AddWithValue("@empid", empid);
             sqlCommand.ExecuteNonQuery();
             SqlConnection.Close();
         }
@@ -131,24 +137,28 @@ namespace PizzaConsoleApp
         }
         public void ConfirmOrder(int empID)
         {
-            foreach (var item in getorders())
+            try
             {
-                Console.WriteLine(item);
+                getorders();
+                Console.WriteLine("If we can do that order type order id down bellow");
+                int ordid = int.Parse(Console.ReadLine());
+                SqlConnection.Open();
+                string query = $"INSERT INTO ConfirmOrder VALUES (@ordid)";
+                SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);
+                sqlCommand.Parameters.AddWithValue("@ordid", ordid);
+                sqlCommand.ExecuteNonQuery();
+                SqlConnection.Close();
+                SqlConnection.Open();
+                string query1 = $"INSERT INTO Orders (EmployeeID) VALUES (@empID)";
+                SqlCommand sqlCommand1 = new SqlCommand(query1, SqlConnection);
+                sqlCommand1.Parameters.AddWithValue("@empID", empID);
+                sqlCommand1.ExecuteNonQuery();
+                SqlConnection.Close();
             }
-            Console.WriteLine("If we can do that order type order id down bellow");
-            int ordid = int.Parse(Console.ReadLine());
-            SqlConnection.Open();
-            string query = $"INSERT INTO ConfirmOrder VALUES (@ordid)";
-            SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);
-            sqlCommand.Parameters.AddWithValue("@ordid", ordid);
-            sqlCommand.ExecuteNonQuery();
-            SqlConnection.Close();
-            SqlConnection.Open();
-            string query1 = $"INSERT INTO Orders (EmployeeID) VALUES (@empID)";
-            SqlCommand sqlCommand1 = new SqlCommand(query1, SqlConnection);
-            sqlCommand1.Parameters.AddWithValue("@empID", empID);
-            sqlCommand1.ExecuteNonQuery();
-            SqlConnection.Close();
+            catch (Exception)
+            {
+                Console.WriteLine("There is no orders at the moment.");
+            }            
         }
     }
 }

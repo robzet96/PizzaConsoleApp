@@ -15,6 +15,7 @@ namespace PizzaConsoleApp
         {
             SqlConnection = new SqlConnection(@"Data Source=DESKTOP-KOH3FDQ\SQLEXPRESS;Initial Catalog=PizzaApp;Integrated Security=true;");
         }
+        Admin admin = new Admin();
         Client client1 = new Client();
         Employee employee1 = new Employee();
         Sauce Sauce = new Sauce();
@@ -24,7 +25,7 @@ namespace PizzaConsoleApp
         {
             Console.WriteLine("1. Register\n" +
                 "2. Login\n" +
-                "3. Continue as guest");
+                "3. Contact information");
             string choice = Console.ReadLine();
             return choice;
         }
@@ -36,13 +37,15 @@ namespace PizzaConsoleApp
             string query;
             if (Regex.IsMatch(login))
             {
-                query = $"SELECT EmployeeID FROM Employees WHERE EmployeeLogin = {login} AND EmployeePassword = {password} ";
+                query = $"SELECT EmployeeID FROM Employees WHERE EmployeeLogin = @login AND EmployeePassword = @password ";
             }
             else
             {
-                query = $"SELECT ClientID FROM Clients WHERE Email = {login} AND ClientPassword = {password}";
+                query = $"SELECT ClientID FROM Clients WHERE ClientEmail = @login AND ClientPassword = @password";
             }
             SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);
+            sqlCommand.Parameters.AddWithValue("@login", login);
+            sqlCommand.Parameters.AddWithValue("@password", password);
             SqlDataReader sqlDataReader = sqlCommand.ExecuteReader();
             sqlDataReader.Read();
             id = sqlDataReader.GetInt32(0);
@@ -54,8 +57,7 @@ namespace PizzaConsoleApp
             Regex = new Regex("([A-Z]{2}[0-9]{3})");
             if (Regex.IsMatch(login))
             {
-                int empid = logginin;
-                string choice = Console.ReadLine();
+                int empid = logginin;               
                 Console.WriteLine("Welcome to Employee Menu. There are your options:\n" +
                     "1. Edit password\n" +
                     "2. Add pizza to menu\n" +
@@ -66,15 +68,23 @@ namespace PizzaConsoleApp
                     "7. Confirm order\n" +
                     "8. Display sauce menu\n" +
                     "9. Display pizza menu");
-
+                string choice = Console.ReadLine();
                 switch (choice)
                 {
                     case "1":
-                        Console.WriteLine("Insert your old password: ");
-                        string oldpass = Console.ReadLine();
                         Console.WriteLine("Insert your new password");
-                        string newpass = Console.ReadLine();    
-                        employee1.EditPassword(newpass,oldpass);
+                        string newpass = Console.ReadLine();
+                        Console.WriteLine("Insert your new password once again to confirm the change");
+                        string newpass1 = Console.ReadLine();
+                        if (newpass == newpass1)
+                        {
+                            employee1.EditPassword(newpass, empid);
+                            Console.WriteLine($"Your password has been changed to {newpass}");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Something went wrong, your password has NOT been changed.");
+                        }
                         break;
                         case "2":
                         Console.WriteLine("Insert pizza name: ");
@@ -109,10 +119,10 @@ namespace PizzaConsoleApp
                         employee1.ConfirmOrder(empid);
                         break;
                     case "8":
-                        employee1.DisplayMenus(Sauce.Sauces);
+                        employee1.DisplayMenus(employee1.GetSauce());
                         break;
                     case "9":
-                        employee1.DisplayMenus(Pizza.Pizzas);
+                        employee1.DisplayMenus(employee1.GetPizza());
                         break;
                     default:
                         break;
@@ -120,12 +130,35 @@ namespace PizzaConsoleApp
             }
             else
             {
-
+                int cliid = logginin;
+                Console.WriteLine("Welcome to PizzaApp. There are your options:\n" +
+                    "1. Edit password\n" +
+                    "2. Order pizza\n" +
+                    "3. Check confirmation");
+                string clichoice = Console.ReadLine();
+                switch (clichoice)
+                {
+                    case "1":
+                        Console.WriteLine("Insert your old password: ");
+                        string clioldpassword = Console.ReadLine();
+                        Console.WriteLine("Insert your new password: ");
+                        string clinewpassword = Console.ReadLine();
+                        client1.EditPassword(clinewpassword,clioldpassword);
+                        break;
+                        case"2":
+                        client1.Order(cliid);
+                        break;
+                    case "3":
+                        client1.CheckConfirmation();
+                        break;
+                    default:
+                        break;
+                }
             }
         }
-        public void Login(string choice)
+        public void Login()
         {
-            switch (choice)
+            switch (startoptions())
             {
                 case "1":                    
                     client1.Register();
@@ -135,7 +168,42 @@ namespace PizzaConsoleApp
                     string login = Console.ReadLine();
                     Console.WriteLine("Password: ");
                     string password = Console.ReadLine();
-                    mainmenu(login,loggingin(login,password));
+                    if (login != "Admin" & password != "admin1234")
+                    {
+                        mainmenu(login, loggingin(login, password));
+                    }
+                    else
+                    {
+                        Console.WriteLine("Admin panel options:\n" +
+                            "1. Add employee\n" +
+                            "2. Delete employee");
+                        string choice = Console.ReadLine();
+                        switch (choice)
+                        {
+                            case "1":
+                                Console.WriteLine("Insert new employee name: ");
+                                string name = Console.ReadLine();
+                                Console.WriteLine("Insert new employee last name: ");
+                                string lastname = Console.ReadLine();
+                                admin.AddEmployee(name,lastname);
+                                break;
+                            case "2":
+                                admin.DisplayMenus(admin.getemployees());
+                                Console.WriteLine("Insert employee to delete id: ");
+                                string empid = Console.ReadLine();
+                                admin.DeleteEmployee(empid);
+                                break;
+                            default:
+                                break;
+                        }                        
+                        Console.WriteLine();
+                        mainmenu("CE419", loggingin("CE419","newpass"));
+                    }
+                    break;
+                    case "3":
+                    Console.WriteLine("Phone number: 555-444-333\n" +
+                        "Email: pizzaapp@gmail.com" +
+                        "Address: Katowice 44-555, Pocztowa 12");
                     break;
                 default:
                     break;

@@ -11,6 +11,10 @@ namespace PizzaConsoleApp
     {
         SqlConnection SqlConnection;
         Random rnd = new Random();
+        public Admin()
+        {
+            SqlConnection = new SqlConnection(@"Data Source=DESKTOP-KOH3FDQ\SQLEXPRESS;Initial Catalog=PizzaApp;Integrated Security=true;");
+        }
         public void DeleteEmployee(string employeeid)
         {
             SqlConnection.Open();
@@ -22,7 +26,7 @@ namespace PizzaConsoleApp
         }
         private string employeelogin(string employeename, string employeelastname)
         {
-            string login = (employeename.ElementAt(0) + employeelastname.ElementAt(0) +""+rnd.Next(1000));
+            string login = (Convert.ToString(employeename.ElementAt(0)) + Convert.ToString(employeelastname.ElementAt(0)) + "" + rnd.Next(1000));
             return login;
         }
         public void AddEmployee(string employeename, string employeelastname)
@@ -37,5 +41,26 @@ namespace PizzaConsoleApp
             sqlCommand.ExecuteNonQuery();
             SqlConnection.Close();
         }
+        public IEnumerable<Employee> getemployees()
+        {
+            SqlConnection.Open();
+            string query = $"SELECT * FROM Employees";
+            SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);
+            SqlDataReader sqlDataReader = sqlCommand.ExecuteReader();
+            while (sqlDataReader.Read())
+            {
+                Employees.Add(new Employee()
+                {
+                    EmployeeID = sqlDataReader.GetInt32(0),
+                    Name = sqlDataReader.GetString(1),
+                    LastName = sqlDataReader.GetString(2),
+                    Password = sqlDataReader.GetString(3),
+                    Login = sqlDataReader.GetString(4),                   
+                });
+            }
+            SqlConnection.Close();
+            return Employees;
+        }
+           
     }
 }

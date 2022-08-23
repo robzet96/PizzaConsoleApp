@@ -67,12 +67,15 @@ namespace PizzaConsoleApp
             string address = "";
             TimeOnly timeOnly;
             string choice = "N";
+            DisplayMenus(GetPizza());
+            Console.WriteLine();
+            DisplayMenus(GetSauce());
             do
-            {
+            {               
                 Console.WriteLine("Insert pizza number: ");
                 int pizznum = int.Parse(Console.ReadLine());
                 Console.WriteLine("What size do you want? [S]mall/[M]edium/[L]arge");
-                string pizzasize = Console.ReadLine();
+                string pizzasize = Console.ReadLine();               
                 Console.WriteLine("What sauce do you want");
                 string sauce = Console.ReadLine();
                 pizzaorder.Add(Convert.ToString(pizznum));
@@ -160,12 +163,25 @@ namespace PizzaConsoleApp
             sqlCommand3.Parameters.AddWithValue("@price", Price);
             sqlCommand3.ExecuteNonQuery();
             SqlConnection.Close();
+            Console.WriteLine("This is your order ID");
+            SqlConnection.Open();
+            SqlCommand sqlCommand4 = new SqlCommand();
+            sqlCommand4.CommandType = System.Data.CommandType.Text;
+            sqlCommand4.CommandText = $"SELECT OrderID FROM Orders WHERE ClientID = @id AND OrderedThings = @orderedthings AND TotalPrice = @price";
+            sqlCommand4.Parameters.AddWithValue("@id", id);
+            sqlCommand4.Parameters.AddWithValue("@orderedthings", orderedthings);
+            sqlCommand4.Parameters.AddWithValue("@price", Price);
+            sqlCommand4.Connection = SqlConnection;
+            SqlDataReader reader = sqlCommand4.ExecuteReader();
+            reader.Read();
+            Console.WriteLine(reader.GetInt32(0));
+            SqlConnection.Close();
         }
         public override string ToString()
         {
             return "Client ID: " + ClientID + " Name: " + Name + " Last name: " + LastName + " Phone number: " + ClientPhoneNumber + " Login: " + Login + " Client address: " + ClientAddress + " Password " + Password;
         }
-        private IEnumerable<Pizza> GetPizza()
+        public IEnumerable<Pizza> GetPizza()
         {
             SqlConnection.Open();
             string query = $"SELECT * FROM Pizzas";
@@ -184,7 +200,7 @@ namespace PizzaConsoleApp
             SqlConnection.Close();
             return Pizzas;
         }
-        private IEnumerable<Sauce> GetSauce()
+        public IEnumerable<Sauce> GetSauce()
         {
             SqlConnection.Open();
             string query = $"SELECT * FROM Sauces";
@@ -199,6 +215,7 @@ namespace PizzaConsoleApp
                     SaucePrice = sqlDataReader.GetString(2),
                 });
             }
+            SqlConnection.Close();
             return Sauces;
         }
         public void DisplayMenus(IEnumerable<object> objects)
@@ -206,6 +223,30 @@ namespace PizzaConsoleApp
             foreach (var item in objects)
             {
                 Console.WriteLine(item);
+            }
+        }
+        public void CheckConfirmation()
+        {
+            string check = null;
+            Console.WriteLine("Insert your order ID");
+            int orderid = int.Parse(Console.ReadLine());
+            SqlConnection.Open();
+            SqlCommand sqlCommand = new SqlCommand();
+            sqlCommand.CommandType = System.Data.CommandType.Text;
+            sqlCommand.CommandText = $"SELECT ConfirmOrderID FROM ConfirmOrder WHERE OrderID = @ordid";
+            sqlCommand.Connection = SqlConnection;
+            sqlCommand.Parameters.AddWithValue("@ordid", orderid);
+            SqlDataReader sqlDataReader = sqlCommand.ExecuteReader();
+            sqlDataReader.Read();
+            check = sqlDataReader.GetString(0);
+            SqlConnection.Close();
+            if (check != null)
+            {
+                Console.WriteLine("We prepare your order");
+            }
+            else
+            {
+                Console.WriteLine("");
             }
         }
     }
