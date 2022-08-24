@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data.SqlClient;
+using System.Text.RegularExpressions;
 
 namespace PizzaConsoleApp
 {
@@ -11,6 +12,7 @@ namespace PizzaConsoleApp
     {
         SqlConnection SqlConnection;
         public List<Client> clients = new List<Client>();
+        Regex regex;
         public Client()
         {
             SqlConnection = new SqlConnection(@"Data Source=DESKTOP-KOH3FDQ\SQLEXPRESS;Initial Catalog=PizzaApp;Integrated Security=true;");
@@ -23,13 +25,13 @@ namespace PizzaConsoleApp
         public string ClientAddress { get; set; }
         public string ClientPhoneNumber { get; set; }
         public double Price { get; set; }
-        public void EditPassword(string newpassword, string oldpassword)
+        public void EditPassword(string newpassword, int clientid)
         {
             SqlConnection.Open();
-            string query = $"UPDATE Clients SET ClientPassword = @newpass WHERE ClientPassword = @oldpass; ";
+            string query = $"UPDATE Clients SET ClientPassword = @newpass WHERE ClientID = @clientid; ";
             SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);
             sqlCommand.Parameters.AddWithValue("@newpass", newpassword);
-            sqlCommand.Parameters.AddWithValue("@oldpass", oldpassword);
+            sqlCommand.Parameters.AddWithValue("@clientid", clientid);
             sqlCommand.ExecuteNonQuery();
             SqlConnection.Close();
         }
@@ -41,8 +43,20 @@ namespace PizzaConsoleApp
             string lastname = Console.ReadLine();
             Console.WriteLine("Phone number: ");
             string phonenumber = Console.ReadLine();
+            regex = new Regex(@"([0-9]{9})");
+            while (!regex.IsMatch(phonenumber))
+            {
+                Console.WriteLine("Your phone number is incorrect. You should enter it like this: 111222333");
+                phonenumber = Console.ReadLine();
+            }
             Console.WriteLine("Email: ");
+            regex = new Regex(@"([a-z0-9]+)\.?([a-zA-Z0-9]+)@([a-z]+)\.[a-z]{2,3}");
             string email = Console.ReadLine();
+            while (!regex.IsMatch(email))
+            {
+                Console.WriteLine("Your email address is incorrect. You should try again.");
+                email = Console.ReadLine();
+            }
             Console.WriteLine("Address: ");
             string address = Console.ReadLine();
             Console.WriteLine("Password: ");

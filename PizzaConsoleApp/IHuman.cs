@@ -12,6 +12,6 @@ namespace PizzaConsoleApp
         string LastName { get; set; }
         string Login { get; set; }
         string Password { get; set; }
-        void EditPassword(string oldpassword, string newpassword);
+        void EditPassword(string newpassword, int id);
     }    
 }

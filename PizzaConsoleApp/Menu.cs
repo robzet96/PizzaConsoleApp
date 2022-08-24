@@ -25,7 +25,8 @@ namespace PizzaConsoleApp
         {
             Console.WriteLine("1. Register\n" +
                 "2. Login\n" +
-                "3. Contact information");
+                "3. Contact information\n" +
+                "Q. To quit app");
             string choice = Console.ReadLine();
             return choice;
         }
@@ -125,6 +126,7 @@ namespace PizzaConsoleApp
                         employee1.DisplayMenus(employee1.GetPizza());
                         break;
                     default:
+                        Console.WriteLine("No option like this.");
                         break;
                 }
             }
@@ -139,11 +141,18 @@ namespace PizzaConsoleApp
                 switch (clichoice)
                 {
                     case "1":
-                        Console.WriteLine("Insert your old password: ");
-                        string clioldpassword = Console.ReadLine();
                         Console.WriteLine("Insert your new password: ");
                         string clinewpassword = Console.ReadLine();
-                        client1.EditPassword(clinewpassword,clioldpassword);
+                        Console.WriteLine("Insert your new password one more time to confirm: ");
+                        string confirmclinewpassowrd = Console.ReadLine();
+                        if (clinewpassword == confirmclinewpassowrd)
+                        {
+                            client1.EditPassword(clinewpassword, cliid);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Something went wrong your password has NOT been changed.");
+                        }
                         break;
                         case"2":
                         client1.Order(cliid);
@@ -152,13 +161,14 @@ namespace PizzaConsoleApp
                         client1.CheckConfirmation();
                         break;
                     default:
+                        Console.WriteLine("No option like this.");
                         break;
                 }
             }
         }
         public void Login()
         {
-            switch (startoptions())
+            switch (startoptions().ToLower())
             {
                 case "1":                    
                     client1.Register();
@@ -170,7 +180,15 @@ namespace PizzaConsoleApp
                     string password = Console.ReadLine();
                     if (login != "Admin" & password != "admin1234")
                     {
-                        mainmenu(login, loggingin(login, password));
+                        try
+                        {
+                            mainmenu(login, loggingin(login, password));
+                        }
+                        catch (Exception)
+                        {
+                            Console.WriteLine("Login or password are incorrect.");
+                            Login();
+                        }
                     }
                     else
                     {
@@ -191,13 +209,32 @@ namespace PizzaConsoleApp
                                 admin.DisplayMenus(admin.getemployees());
                                 Console.WriteLine("Insert employee to delete id: ");
                                 string empid = Console.ReadLine();
-                                admin.DeleteEmployee(empid);
+                                try
+                                {
+                                    admin.DeleteEmployee(empid);
+                                }
+                                catch (Exception)
+                                {
+                                    Console.WriteLine("No employee with this ID");
+                                }
                                 break;
                             default:
+                                Console.WriteLine("No option like this in admin panel.");
                                 break;
                         }                        
                         Console.WriteLine();
-                        mainmenu("CE419", loggingin("CE419","newpass"));
+                        Console.WriteLine("If you wish to see employee options you have to log in as one of them. To do that insert his login: ");
+                        string emplogin = Console.ReadLine();
+                        Console.WriteLine("Password: ");
+                        string emppassowrd = Console.ReadLine();
+                        try
+                        {
+                            mainmenu(emplogin, loggingin(emplogin, emppassowrd));
+                        }
+                        catch (Exception)
+                        {
+                            Console.WriteLine("No login or password like this.");
+                        }
                     }
                     break;
                     case "3":
@@ -205,7 +242,10 @@ namespace PizzaConsoleApp
                         "Email: pizzaapp@gmail.com" +
                         "Address: Katowice 44-555, Pocztowa 12");
                     break;
+                case "q":
+                    return;
                 default:
+                    Console.WriteLine("No option like this.");
                     break;
             }
         }
