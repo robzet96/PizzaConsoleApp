@@ -43,6 +43,7 @@ namespace PizzaConsoleApp
         }
         public IEnumerable<Employee> getemployees()
         {
+            Employees.Clear();
             SqlConnection.Open();
             string query = $"SELECT * FROM Employees";
             SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);

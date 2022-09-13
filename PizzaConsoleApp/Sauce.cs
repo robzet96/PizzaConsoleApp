@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PizzaConsoleApp
 {
-    public class Sauce
+    public class Sauce : Orders
     {
         public int SauceId { get; set; }
         public string SauceName { get; set; }

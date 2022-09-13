@@ -12,6 +12,7 @@ namespace PizzaConsoleApp
     {
         SqlConnection SqlConnection;
         public List<Client> clients = new List<Client>();
+        public List<int> confirmclient = new List<int>();
         Regex regex;
         public Client()
         {
@@ -187,9 +188,13 @@ namespace PizzaConsoleApp
             sqlCommand4.Parameters.AddWithValue("@price", Price);
             sqlCommand4.Connection = SqlConnection;
             SqlDataReader reader = sqlCommand4.ExecuteReader();
-            reader.Read();
-            Console.WriteLine(reader.GetInt32(0));
+            int orderid = 0;
+            while (reader.Read())
+            {
+                orderid = reader.GetInt32(0);
+            }            
             SqlConnection.Close();
+            Console.WriteLine(orderid);
         }
         public override string ToString()
         {
@@ -197,6 +202,7 @@ namespace PizzaConsoleApp
         }
         public IEnumerable<Pizza> GetPizza()
         {
+            Pizzas.Clear();
             SqlConnection.Open();
             string query = $"SELECT * FROM Pizzas";
             SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);
@@ -216,6 +222,7 @@ namespace PizzaConsoleApp
         }
         public IEnumerable<Sauce> GetSauce()
         {
+            Sauces.Clear();
             SqlConnection.Open();
             string query = $"SELECT * FROM Sauces";
             SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);
@@ -241,26 +248,26 @@ namespace PizzaConsoleApp
         }
         public void CheckConfirmation()
         {
-            string check = null;
             Console.WriteLine("Insert your order ID");
             int orderid = int.Parse(Console.ReadLine());
-            SqlConnection.Open();
-            SqlCommand sqlCommand = new SqlCommand();
-            sqlCommand.CommandType = System.Data.CommandType.Text;
-            sqlCommand.CommandText = $"SELECT ConfirmOrderID FROM ConfirmOrder WHERE OrderID = @ordid";
-            sqlCommand.Connection = SqlConnection;
-            sqlCommand.Parameters.AddWithValue("@ordid", orderid);
-            SqlDataReader sqlDataReader = sqlCommand.ExecuteReader();
-            sqlDataReader.Read();
-            check = sqlDataReader.GetString(0);
-            SqlConnection.Close();
-            if (check != null)
+            int confirmation = 0;
+            sqlConnection.Open();
+            string query = $"SELECT ConfirmOrderID FROM ConfirmOrder WHERE OrderID = @orderid;";
+            SqlCommand SqlCommand = new SqlCommand(query, sqlConnection);
+            SqlCommand.Parameters.AddWithValue(@"orderid", orderid);
+            SqlDataReader SqlDataReader = SqlCommand.ExecuteReader();
+            while (SqlDataReader.Read())
             {
-                Console.WriteLine("We prepare your order");
+                confirmation = SqlDataReader.GetInt32(0);
+            }
+            sqlConnection.Close();
+            if (confirmation > 0)
+            {
+                Console.WriteLine("We took the order");
             }
             else
             {
-                Console.WriteLine("");
+                Console.WriteLine("We did NOT took the order yet");
             }
         }
     }

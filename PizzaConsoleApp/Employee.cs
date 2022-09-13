@@ -12,6 +12,7 @@ namespace PizzaConsoleApp
     {
         SqlConnection SqlConnection;
         public List<Employee> Employees = new List<Employee>();
+        
         public Employee()
         {
             SqlConnection = new SqlConnection(@"Data Source=DESKTOP-KOH3FDQ\SQLEXPRESS;Initial Catalog=PizzaApp;Integrated Security=true;");
@@ -60,40 +61,64 @@ namespace PizzaConsoleApp
         }
         public void DeletePizza(string pizzaname)
         {
-            SqlConnection.Open();
-            string query = $"DELETE FROM Pizzas WHERE PizzaName = @pizzaname";
-            SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);
-            sqlCommand.Parameters.AddWithValue("@pizzaname", pizzaname);
-            sqlCommand.ExecuteNonQuery();
-            SqlConnection.Close();
+            try
+            {
+                SqlConnection.Open();
+                string query = $"DELETE FROM Pizzas WHERE PizzaName = @pizzaname";
+                SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);
+                sqlCommand.Parameters.AddWithValue("@pizzaname", pizzaname);
+                sqlCommand.ExecuteNonQuery();
+                SqlConnection.Close();
+            }
+            catch (Exception)
+            {
+                SqlConnection.Close();
+                Console.WriteLine("There is no pizza with this name.");
+            }
         }
         public void DeleteSauce(string saucename)
         {
-            SqlConnection.Open();
-            string query = $"DELETE FROM Sauces WHERE SauceName = @saucename";
-            SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);
-            sqlCommand.Parameters.AddWithValue("@pizzaname", saucename);
-            sqlCommand.ExecuteNonQuery();
-            SqlConnection.Close();
+            try
+            {
+                SqlConnection.Open();
+                string query = $"DELETE FROM Sauces WHERE SauceName = @saucename";
+                SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);
+                sqlCommand.Parameters.AddWithValue("@pizzaname", saucename);
+                sqlCommand.ExecuteNonQuery();
+                SqlConnection.Close();
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("There is no sauce with this name."); 
+            }
         }
         public void ConfirmRegistration()
         {
-            foreach (var item in getclients())
-            {
-                Console.WriteLine(item);
-            }
+            unconfirmedclients();
             Console.WriteLine("If everything is fine, you can accept registration by typing clientID down bellow.");
-            int clientid = int.Parse(Console.ReadLine());
-            SqlConnection.Open();
-            string query = $"INSERT INTO ClientRegisterConfirm VALUES(@ClientID)";
-            SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);
-            sqlCommand.Parameters.AddWithValue("@ClientID", clientid);
-            sqlCommand.ExecuteNonQuery();
-            SqlConnection.Close();
-            Console.WriteLine("Registration accepted.");
+            int clientid = 0;
+            try
+            {
+                clientid = int.Parse(Console.ReadLine());
+                SqlConnection.Open();
+                string query = $"INSERT INTO ClientRegisterConfirm VALUES(@ClientID)";
+                SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);
+                sqlCommand.Parameters.AddWithValue("@ClientID", clientid);
+                sqlCommand.ExecuteNonQuery();
+                SqlConnection.Close();
+                Console.WriteLine("Registration accepted.");
+                Console.ReadKey();
+            }
+            catch (Exception)
+            {
+                sqlConnection.Close();
+                Console.WriteLine("It is not a number");
+            }
+            
         }
-        private IEnumerable<Client> getclients()
+        public IEnumerable<Client> getclients()
         {
+            clients.Clear();
             SqlConnection.Open();
             string query = $"SELECT * FROM Clients";
             SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);
@@ -114,32 +139,46 @@ namespace PizzaConsoleApp
             SqlConnection.Close();
             return clients;
         }
-        private IEnumerable<Orders> getorders()
+        public IEnumerable<int> getconfirmclients()
         {
-            Orders orders = new Orders();
+            confirmclient.Clear();
+            SqlConnection.Open();
+            string query = $"SELECT ClientID FROM ClientRegisterConfirm";
+            SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);
+            SqlDataReader sqlDataReader = sqlCommand.ExecuteReader();
+            while (sqlDataReader.Read())
+            {
+                confirmclient.Add(sqlDataReader.GetInt32(0));
+            }
+            SqlConnection.Close();
+            return confirmclient;
+        }
+        public IEnumerable<Orders> getorders()
+        {           
+            orderlist.Clear();
             SqlConnection.Open();
             string query = $"SELECT * FROM Orders";
             SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);
             SqlDataReader sqlDataReader = sqlCommand.ExecuteReader();
             while (sqlDataReader.Read())
             {                
-                orders.orders.Add(new Orders()
+                orderlist.Add(new Orders()
                 {
                     OrderID = sqlDataReader.GetInt32(0),
                     CustomerID = sqlDataReader.GetInt32(1),
-                    EmployeeID = sqlDataReader.GetInt32(2),
+                    EmployeeID = sqlDataReader.IsDBNull(2) ? null : sqlDataReader.GetInt32(2),
                     OrderedThings = sqlDataReader.GetString(3),
-                    TotalPrice = sqlDataReader.GetDouble(4)
+                    TotalPrice = sqlDataReader.GetDouble(4),
                 });
             }
             SqlConnection.Close();
-            return orders.orders;
+            return orderlist;
         }
         public void ConfirmOrder(int empID)
         {
             try
             {
-                getorders();
+                DisplayMenus(getorders());
                 Console.WriteLine("If we can do that order type order id down bellow");
                 int ordid = int.Parse(Console.ReadLine());
                 SqlConnection.Open();
@@ -158,7 +197,69 @@ namespace PizzaConsoleApp
             catch (Exception)
             {
                 Console.WriteLine("There is no orders at the moment.");
+            }
+        }
+        private void confirmedclients()
+        {
+            List<Client> confirm = new List<Client>();
+            int id = 0;
+            foreach (var item in getclients())
+            {
+                if (getconfirmclients().Contains(item.ClientID))
+                {
+                    id = item.ClientID;
+                    SqlConnection.Open();
+                    string query = $"SELECT * FROM Clients WHERE ClientID = {id}";
+                    SqlCommand sqlCommand = new SqlCommand(query,SqlConnection);
+                    SqlDataReader sqlDataReader = sqlCommand.ExecuteReader();
+                    while (sqlDataReader.Read())
+                    {
+                        confirm.Add(new Client()
+                        {
+                            ClientID = sqlDataReader.GetInt32(0),
+                            Name = sqlDataReader.GetString(1),
+                            LastName = sqlDataReader.GetString(2),
+                            Login = sqlDataReader.GetString(3),
+                            ClientAddress = sqlDataReader.GetString(5),
+                            Password = sqlDataReader.GetString(6)
+                        });
+                    }
+                    SqlConnection.Close();                    
+                }
+            }
+            DisplayMenus(confirm);
+        }
+        private void unconfirmedclients()
+        {
+            List<Client> confirm = new List<Client>();
+            confirm.Clear();
+            int id = 0;
+            foreach (var item in getclients())
+            {                
+                if (!getconfirmclients().Contains(item.ClientID))
+                {                    
+                    id = item.ClientID;
+                    SqlConnection.Open();
+                    string query = $"SELECT * FROM Clients WHERE ClientID = {id}";
+                    SqlCommand sqlCommand = new SqlCommand(query, SqlConnection);
+                    SqlDataReader sqlDataReader = sqlCommand.ExecuteReader();
+                    while (sqlDataReader.Read())
+                    {                        
+                        confirm.Add(new Client()
+                        {
+                            ClientID = sqlDataReader.GetInt32(0),
+                            Name = sqlDataReader.GetString(1),
+                            LastName = sqlDataReader.GetString(2),
+                            ClientPhoneNumber = sqlDataReader.GetString(3),
+                            Login = sqlDataReader.GetString(4),
+                            ClientAddress = sqlDataReader.GetString(5),
+                            Password = sqlDataReader.GetString(6)
+                        });                                              
+                    }                   
+                    SqlConnection.Close();                    
+                }
             }            
+            DisplayMenus(confirm);            
         }
     }
 }
